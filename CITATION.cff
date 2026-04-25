@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use these materials, please cite the associated Letter."
+title: "URF-Jacobi Replication Archive — Jacobi instability on SPD(n) as a precursor of systemic financial transitions"
+authors:
+  - family-names: Papadopoulos
+    given-names: Evangelos
+    affiliation: "Independent Researcher, London, United Kingdom"
+    email: "contact@econosysmographe.eu"
+date-released: 2026-04-24
+version: "1.0.0"
+type: software
+license: CC-BY-NC-ND-4.0
+repository-code: "https://github.com/[username]/urf-jacobi-replication"
+preferred-citation:
+  type: article
+  title: "Jacobi instability on SPD(n) as a precursor of systemic financial transitions"
+  authors:
+    - family-names: Papadopoulos
+      given-names: Evangelos
+  journal: "Physics Letters A"
+  year: 2026
+  notes: "Submitted"

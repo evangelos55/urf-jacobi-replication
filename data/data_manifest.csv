@@ -1,0 +1,5 @@
+file,crisis,period_start,period_end,total_days,n_assets,n_pca,rolling_window,burn_in,rupture_event,rupture_date,first_warning_date,lead_days,d_max,tss_min,days_singularity,generated_at,source_yahoo,source_fred
+forensic_dotcom_2000.json,Dot-com 2000,1999-03-30,2003-12-31,1254,19,5,63,252,NASDAQ Peak,2000-03-10,1999-09-03,189,0.7233,71.8335,35,2026-04-10 12:36:20,yfinance,FRED API
+forensic_gfc_2007.json,GFC 2007,2005-08-26,2009-12-31,1149,19,5,63,252,Lehman Brothers,2008-09-15,2007-02-27,566,1.2923,68.2431,47,2026-04-10 12:36:20,yfinance,FRED API
+forensic_covid_2020.json,COVID-19 2020,2018-09-27,2022-12-31,1127,17,5,63,252,WHO Pandemic Declaration,2020-03-11,2019-08-05,219,1.2772,74.9764,49,2026-04-10 12:36:20,yfinance,FRED API
+forensic_tradewar_2026.json,Trade War 2026,2022-04-04,2026-04-10,1011,16,5,63,252,Liberation Day Tariffs,2025-04-02,2024-04-15,352,0.8981,73.7026,25,2026-04-10 12:36:21,yfinance,FRED API
