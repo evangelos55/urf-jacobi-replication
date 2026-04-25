@@ -1,7 +1,8 @@
 
 ======================================================================
-URF-4 Statistical Validation — Papadopoulos (2026)
-Version 1.1.0  |  Run: 2026-04-13 06:06:09
+URF-Jacobi Letter — Replication Harness
+Papadopoulos, E. (2026). Physics Letters A.
+Run: 2026-04-25 10:02:46
 ======================================================================
 
 Loading forensic datasets...
@@ -31,7 +32,7 @@ Verifying singularity days (D > 0.3) against JSON stats...
   Trade War 2026: D>0.3 days = 25  (JSON: 25)  ✓
 
 ======================================================================
-TEST 1 — Bootstrap CI on Lead Times  (§5.6.1)
+TEST 1 — Bootstrap CI on Lead Times  (Letter §4.2)
   Method       : Circular block bootstrap
   Block length : 63 days  (= ricci_window)
   Replications : 10,000
@@ -52,7 +53,7 @@ Mean (4 crises)          331           290           331          11.0
   ✓ All four lead times strictly positive — geometric warning precedes rupture
 
 ======================================================================
-TEST 2 — Mann-Whitney U: Crisis vs. Calm Periods  (§5.6.2)
+TEST 2 — Mann-Whitney U: Crisis vs. Calm Periods  (Letter §4.2)
   Calm   : timeline start → first geometric warning date
   Crisis : first warning date → rupture date
   Bonferroni α : 0.0125  (4 simultaneous tests)
@@ -68,10 +69,15 @@ Indicator  Median (crisis)  Median (calm) U statistic p-value  Effect r Sig.
 
   *** p < 0.0125 (Bonferroni-corrected)  |  ns = not significant
   ✓ TSS and κ (level indicators) clearly separate crisis from calm
-  Note: D(t) omitted — it measures velocity, not level of stress
+  Note: Effect size r reported as |r| (absolute value); direction follows median differences.
+  Note: D(t) omitted from Mann-Whitney — D(t) is a velocity indicator (instantaneous
+        geodesic speed: d_AIRM(Σ(t-1), Σ(t))), not a stress level indicator.
+        A calm day can spike (transient shock) and a deep crisis day can show low D(t)
+        (manifold degraded but no longer accelerating). Level vs. velocity are
+        kinematically distinct: Σ(t)=position, D(t)=velocity, dD/dt=acceleration.
 
 ======================================================================
-TEST 3 — ROC / AUC  [FOR INTERNAL REFERENCE — not in paper §5.6]
+TEST 3 — ROC / AUC  [transparency only — not a §4 claim]
   Positive : crisis window (first_warning → rupture)
   Negative : calm baseline (start → first_warning)
   Two formulations: raw daily  |  rolling 21-day mean
@@ -87,11 +93,11 @@ Indicator  AUC (raw)      CI (raw)  AUC (21d avg)  CI (21d avg) DeLong Z p-value
   Raw daily AUC ≈ 0.50–0.53  → expected: trend indicator ≠ tick classifier
   Rolling 21d AUC → 0.544  → structural deterioration clearly visible
 
-  If a reviewer asks: use the 21-day formulation + explain leading-indicator logic.
-  Paper formal validation uses Tests 1, 2, 4 only (Bootstrap CI, Mann-Whitney, FP Rate).
+  Letter §4 formal validation uses Tests 1, 2, 4, 5
+  (Bootstrap CI, Mann-Whitney, FP Rate, VaR-trigger robustness).
 
 ======================================================================
-TEST 4 — False-Positive Rate at D > 0.3  (§5.6.4)
+TEST 4 — False-Positive Rate at D > 0.3  (Letter §4.4)
   Definition : individual trading days where D(t) > 0.3
   TP : D > 0.3  within [first_warning, rupture]
   FP : D > 0.3  before first_warning  (pre-crisis spikes)
@@ -111,6 +117,71 @@ Dual (D > 0.3 AND TSS < 80%)       12        3             15               20.0
 
   ✓ Single filter: FP rate = 19/68 flagged days = 27.9%
   ✓ Dual filter adds TSS < 80% confirmation — reduces spurious early spikes
+
+======================================================================
+TEST 5 — Rupture-Trigger Robustness (Letter §4.4)
+  Geometric anchor t* : first geometric warning (from JSON)
+  Baseline t_c        : JSON lead_reference_date  (Letter Table 1)
+  Trigger A           : first close <= -10% vs trailing 252d max
+  Trigger B           : first daily return < VaR-99 of trailing 252d
+======================================================================
+        Crisis  Lead (baseline)  Lead (-10% DD) Δ (-10% DD)  Lead (VaR-99) Δ (VaR-99)
+  Dot-com 2000              189              26        -86%             42       -78%
+      GFC 2007              566             272        -52%              0      -100%
+ COVID-19 2020              219             206         -6%            203        -7%
+Trade War 2026              352             332         -6%             15       -96%
+
+  Mean lead time across the 4 crises :
+    Baseline (Letter Table 1)        : 331 days
+    -10% drawdown trigger            : 209 days
+    VaR-99 trigger                   : 65 days
+
+  Robustness reading:
+  - In 7 of 8 (crisis × trigger) combinations the geometric warning t*
+    strictly precedes the price-rupture date (lead > 0); the eighth
+    (GFC under VaR-99) has lead = 0 (same day). The qualitative
+    finding 'geometric warning does not lag price' is preserved under
+    every trigger choice tested here.
+  - The MAGNITUDE of the lead is sensitive to the trigger:
+    cumulative-drawdown triggers (-10% vs trailing 252d) align well
+    with the baseline for COVID-19 and the 2026 trade war (|delta|<10%),
+    but fire earlier for the dot-com and GFC episodes whose published
+    rupture dates correspond to sector-specific events (NASDAQ peak,
+    Lehman) rather than S&P 500 drawdown thresholds.
+  - Single-day VaR-99 breaches fire even earlier (intraday tail
+    events occur throughout pre-crisis periods); a sustained-breach
+    formulation would be needed for closer baseline alignment.
+
+======================================================================
+TEST 6 — Price-Side Blindness in [t*, t_c]  (Letter §4.5)
+  Window      : [t*, t_c] = [first geometric warning, JSON anchor]
+  Computes    : S&P 500 ATH inside the window,
+                cumulative return t* -> ATH,
+                VaR-99(252d) breach count over [t*, ATH]
+======================================================================
+        Crisis  S&P at t*   ATH date  Days t*→ATH  S&P at ATH % return t*→ATH  VaR-99 breaches
+  Dot-com 2000     1357.2 1999-12-31          119      1469.2           +8.3%                1
+      GFC 2007     1399.0 2007-10-09          224      1565.2          +11.9%                7
+ COVID-19 2020     2844.7 2020-02-19          198      3386.1          +19.0%                0
+Trade War 2026     5061.8 2025-02-19          310      6144.1          +21.4%                6
+
+  Mean across 4 crises:
+    Days from t* to S&P 500 cycle high :  212
+    Cumulative S&P return on [t*, ATH] : +15.2%
+    VaR-99 breaches on [t*, ATH]       : 3.5
+
+  Reading:
+  - In every crisis the S&P 500 reaches its all-time high INSIDE
+    the geometric warning window — i.e. AFTER the warning fires.
+  - Cumulative price-side returns over [t*, ATH] average +15.2%:
+    while the geometry warns, the price side keeps appreciating.
+  - VaR-99 breaches are sparse (mean 3.5 per crisis;
+    COVID-19 registers ZERO breaches over 198 days). The
+    intraday tail signal is silent throughout the deterioration.
+
+  This is the empirical signature of the Minsky Singularity
+  (Papadopoulos 2026, SSRN 6212120): the covariance manifold loses
+  coherence while nominal price appreciation masks systemic fragility.
 
 ======================================================================
 All tests complete.
