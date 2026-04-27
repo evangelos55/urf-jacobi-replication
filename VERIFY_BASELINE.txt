@@ -2,7 +2,7 @@
 ======================================================================
 URF-Jacobi Letter — Replication Harness
 Papadopoulos, E. (2026). Physics Letters A.
-Run: 2026-04-25 10:02:46
+Run: 2026-04-27 10:37:07
 ======================================================================
 
 Loading forensic datasets...
@@ -47,7 +47,7 @@ TEST 1 — Bootstrap CI on Lead Times  (Letter §4.2)
        GFC 2007          566           510           566          15.0
   COVID-19 2020          219           190           219           7.8
  Trade War 2026          352           298           352          14.6
-Mean (4 crises)          331           290           331          11.0
+Mean (4 crises)          332           290           331          11.0
 
   ✓ Mean lower bound: 290 days at 95% confidence
   ✓ All four lead times strictly positive — geometric warning precedes rupture
@@ -120,10 +120,10 @@ Dual (D > 0.3 AND TSS < 80%)       12        3             15               20.0
 
 ======================================================================
 TEST 5 — Rupture-Trigger Robustness (Letter §4.4)
-  Geometric anchor t* : first geometric warning (from JSON)
-  Baseline t_c        : JSON lead_reference_date  (Letter Table 1)
-  Trigger A           : first close <= -10% vs trailing 252d max
-  Trigger B           : first daily return < VaR-99 of trailing 252d
+  Geometric anchor t_w : first geometric warning (from JSON)
+  Reference crisis t_c : JSON lead_reference_date  (Letter Table 1)
+  Trigger A            : first close <= -10% vs trailing 252d max
+  Trigger B            : first daily return < VaR-99 of trailing 252d
 ======================================================================
         Crisis  Lead (baseline)  Lead (-10% DD) Δ (-10% DD)  Lead (VaR-99) Δ (VaR-99)
   Dot-com 2000              189              26        -86%             42       -78%
@@ -132,12 +132,12 @@ TEST 5 — Rupture-Trigger Robustness (Letter §4.4)
 Trade War 2026              352             332         -6%             15       -96%
 
   Mean lead time across the 4 crises :
-    Baseline (Letter Table 1)        : 331 days
+    Baseline (Letter Table 1)        : 332 days
     -10% drawdown trigger            : 209 days
     VaR-99 trigger                   : 65 days
 
   Robustness reading:
-  - In 7 of 8 (crisis × trigger) combinations the geometric warning t*
+  - In 7 of 8 (crisis × trigger) combinations the geometric warning t_w
     strictly precedes the price-rupture date (lead > 0); the eighth
     (GFC under VaR-99) has lead = 0 (same day). The qualitative
     finding 'geometric warning does not lag price' is preserved under
@@ -153,27 +153,27 @@ Trade War 2026              352             332         -6%             15      
     formulation would be needed for closer baseline alignment.
 
 ======================================================================
-TEST 6 — Price-Side Blindness in [t*, t_c]  (Letter §4.5)
-  Window      : [t*, t_c] = [first geometric warning, JSON anchor]
+TEST 6 — Price-Side Blindness in [t_w, t_c]  (Letter §4.5)
+  Window      : [t_w, t_c] = [first geometric warning, reference crisis date]
   Computes    : S&P 500 ATH inside the window,
-                cumulative return t* -> ATH,
-                VaR-99(252d) breach count over [t*, ATH]
+                cumulative return t_w -> ATH,
+                VaR-99(252d) breach count over [t_w, ATH]
 ======================================================================
-        Crisis  S&P at t*   ATH date  Days t*→ATH  S&P at ATH % return t*→ATH  VaR-99 breaches
-  Dot-com 2000     1357.2 1999-12-31          119      1469.2           +8.3%                1
-      GFC 2007     1399.0 2007-10-09          224      1565.2          +11.9%                7
- COVID-19 2020     2844.7 2020-02-19          198      3386.1          +19.0%                0
-Trade War 2026     5061.8 2025-02-19          310      6144.1          +21.4%                6
+        Crisis  S&P at t_w   ATH date  Days t_w→ATH  S&P at ATH % return t_w→ATH  VaR-99 breaches
+  Dot-com 2000      1357.2 1999-12-31           119      1469.2            +8.3%                1
+      GFC 2007      1399.0 2007-10-09           224      1565.2           +11.9%                7
+ COVID-19 2020      2844.7 2020-02-19           198      3386.1           +19.0%                0
+Trade War 2026      5061.8 2025-02-19           310      6144.1           +21.4%                6
 
   Mean across 4 crises:
-    Days from t* to S&P 500 cycle high :  212
-    Cumulative S&P return on [t*, ATH] : +15.2%
-    VaR-99 breaches on [t*, ATH]       : 3.5
+    Days from t_w to S&P 500 cycle high :  213
+    Cumulative S&P return on [t_w, ATH] : +15.2%
+    VaR-99 breaches on [t_w, ATH]       : 3.5
 
   Reading:
   - In every crisis the S&P 500 reaches its all-time high INSIDE
     the geometric warning window — i.e. AFTER the warning fires.
-  - Cumulative price-side returns over [t*, ATH] average +15.2%:
+  - Cumulative price-side returns over [t_w, ATH] average +15.2%:
     while the geometry warns, the price side keeps appreciating.
   - VaR-99 breaches are sparse (mean 3.5 per crisis;
     COVID-19 registers ZERO breaches over 198 days). The

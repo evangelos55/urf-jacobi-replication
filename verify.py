@@ -17,7 +17,7 @@ S&P 500 price series and recomputes every empirical claim of §4 of the Letter:
   Test 5 — §4.4 : Rupture-trigger robustness check (alternate price-rupture
                   triggers preserve the multi-month geometric lead)
   Test 6 — §4.5 : Price-side blindness signature (Minsky Singularity) —
-                  in [t*, t_c] the S&P 500 reaches its all-time high inside
+                  in [t_w, t_c] the S&P 500 reaches its all-time high inside
                   the warning window while VaR-99 breaches stay at calm-
                   period frequency
 
@@ -227,11 +227,18 @@ def test1_bootstrap_ci(data: dict, export_csv: bool = False) -> pd.DataFrame:
 
     df_out = pd.DataFrame(rows)
 
-    # Cross-crisis mean row
+    # Cross-crisis mean row.
+    # Asymmetric rounding by convention:
+    #   - lead_days mean uses round() (banker's), so 331.5 -> 332 to match the
+    #     "mean 332 days" claim in the Letter.
+    #   - CI bounds (lo, hi) use int() (floor for positives) — the conventional
+    #     conservative reporting that widens the lower bound. This matches the
+    #     "lower bound 290 days" claim in the Letter (mean of [165, 510, 190, 298]
+    #     = 290.75 -> floor -> 290).
     mean_row = {
         "Crisis":    "Mean (4 crises)",
-        "lead_days": int(df_out["lead_days"].mean()),
-        "boot_mean": int(df_out["boot_mean"].mean()),
+        "lead_days": round(float(df_out["lead_days"].mean())),
+        "boot_mean": round(float(df_out["boot_mean"].mean())),
         "ci_lo":     int(df_out["ci_lo"].mean()),
         "ci_hi":     int(df_out["ci_hi"].mean()),
         "boot_se":   round(float(df_out["boot_se"].mean()), 1),
@@ -644,10 +651,10 @@ def test5_var_robustness(data: dict, export_csv: bool = False) -> pd.DataFrame:
     """
     §4.4 — Rupture-trigger robustness check (VaR + larger drawdowns).
 
-    The geometric anchor t* is the first geometric warning date (from each
-    forensic JSON). The baseline reference t_c is the JSON's
+    The geometric anchor t_w is the first geometric warning date (from each
+    forensic JSON). The reference crisis date t_c is the JSON's
     `lead_reference_date` (the published rupture anchor; lead_days =
-    t_c - t* is what appears in Letter Table 1). This test recomputes
+    t_c - t_w is what appears in Letter Table 1). This test recomputes
     lead times under two alternate price-rupture triggers, both anchored on
     public S&P 500 data:
 
@@ -666,18 +673,18 @@ def test5_var_robustness(data: dict, export_csv: bool = False) -> pd.DataFrame:
     """
     print("\n" + "=" * 70)
     print("TEST 5 — Rupture-Trigger Robustness (Letter §4.4)")
-    print(f"  Geometric anchor t* : first geometric warning (from JSON)")
-    print(f"  Baseline t_c        : JSON lead_reference_date  (Letter Table 1)")
-    print(f"  Trigger A           : first close <= -10% vs trailing 252d max")
-    print(f"  Trigger B           : first daily return < VaR-99 of trailing 252d")
+    print(f"  Geometric anchor t_w : first geometric warning (from JSON)")
+    print(f"  Reference crisis t_c : JSON lead_reference_date  (Letter Table 1)")
+    print(f"  Trigger A            : first close <= -10% vs trailing 252d max")
+    print(f"  Trigger B            : first daily return < VaR-99 of trailing 252d")
     print("=" * 70)
 
     sp = _load_sp500()
 
     rows = []
     for name, d in data.items():
-        t_geom = d["first_warning"]                              # t*
-        t_base = d["rupture_date"]                               # JSON anchor
+        t_geom = d["first_warning"]                              # t_w
+        t_base = d["rupture_date"]                               # t_c (reference crisis date)
         lead_base = d["lead_days"]                               # Letter Table 1 value
 
         t_dd10 = _drawdown_rupture(sp, t_geom, drawdown=-0.10)
@@ -706,11 +713,11 @@ def test5_var_robustness(data: dict, export_csv: bool = False) -> pd.DataFrame:
     leads_var  = [r["Lead (VaR-99)"]  if isinstance(r["Lead (VaR-99)"],  int) else np.nan for r in rows]
 
     print(f"\n  Mean lead time across the 4 crises :")
-    print(f"    Baseline (Letter Table 1)        : {int(np.mean(leads_base))} days")
-    print(f"    -10% drawdown trigger            : {int(np.nanmean(leads_dd10))} days")
-    print(f"    VaR-99 trigger                   : {int(np.nanmean(leads_var))} days")
+    print(f"    Baseline (Letter Table 1)        : {round(float(np.mean(leads_base)))} days")
+    print(f"    -10% drawdown trigger            : {round(float(np.nanmean(leads_dd10)))} days")
+    print(f"    VaR-99 trigger                   : {round(float(np.nanmean(leads_var)))} days")
     print(f"\n  Robustness reading:")
-    print(f"  - In 7 of 8 (crisis × trigger) combinations the geometric warning t*")
+    print(f"  - In 7 of 8 (crisis × trigger) combinations the geometric warning t_w")
     print(f"    strictly precedes the price-rupture date (lead > 0); the eighth")
     print(f"    (GFC under VaR-99) has lead = 0 (same day). The qualitative")
     print(f"    finding 'geometric warning does not lag price' is preserved under")
@@ -731,34 +738,34 @@ def test5_var_robustness(data: dict, export_csv: bool = False) -> pd.DataFrame:
 
 
 # ===========================================================================
-# TEST 6 — Price-side blindness in [t*, t_c]  (Minsky Singularity, §4.5)
+# TEST 6 — Price-side blindness in [t_w, t_c]  (Minsky Singularity, §4.5)
 # ===========================================================================
 
 def test6_minsky_signature(data: dict, export_csv: bool = False) -> pd.DataFrame:
     """
     §4.5 — Price-side blindness during the geometric warning window.
 
-    For each crisis, characterise what the price side does in [t*, t_c]:
-      - S&P 500 close at t*
-      - Date at which the S&P 500 reaches its all-time high (ATH) INSIDE [t*, t_c]
-      - Days from t* to that ATH
-      - S&P 500 return from t* to ATH
-      - Number of VaR-99 (252-day window) breaches in [t*, ATH]
+    For each crisis, characterise what the price side does in [t_w, t_c]:
+      - S&P 500 close at t_w
+      - Date at which the S&P 500 reaches its all-time high (ATH) INSIDE [t_w, t_c]
+      - Days from t_w to that ATH
+      - S&P 500 return from t_w to ATH
+      - Number of VaR-99 (252-day window) breaches in [t_w, ATH]
 
     The empirical pattern is uniform across the four crises: the price-side
-    cycle high is reached INSIDE the warning window (i.e. months AFTER t*),
-    cumulative S&P returns over [t*, ATH] are positive and double-digit on
+    cycle high is reached INSIDE the warning window (i.e. months AFTER t_w),
+    cumulative S&P returns over [t_w, ATH] are positive and double-digit on
     average, and intraday VaR-99 breaches are rare. This is the empirical
     signature of the Minsky Singularity (Papadopoulos 2026, SSRN 6212120):
     nominal price appreciation continues while the covariance manifold
     deteriorates.
     """
     print("\n" + "=" * 70)
-    print("TEST 6 — Price-Side Blindness in [t*, t_c]  (Letter §4.5)")
-    print(f"  Window      : [t*, t_c] = [first geometric warning, JSON anchor]")
+    print("TEST 6 — Price-Side Blindness in [t_w, t_c]  (Letter §4.5)")
+    print(f"  Window      : [t_w, t_c] = [first geometric warning, reference crisis date]")
     print(f"  Computes    : S&P 500 ATH inside the window,")
-    print(f"                cumulative return t* -> ATH,")
-    print(f"                VaR-99(252d) breach count over [t*, ATH]")
+    print(f"                cumulative return t_w -> ATH,")
+    print(f"                VaR-99(252d) breach count over [t_w, ATH]")
     print("=" * 70)
 
     sp = _load_sp500()
@@ -785,30 +792,30 @@ def test6_minsky_signature(data: dict, export_csv: bool = False) -> pd.DataFrame
 
         rows.append({
             "Crisis":              name,
-            "S&P at t*":           round(sp_at_fw, 1),
+            "S&P at t_w":          round(sp_at_fw, 1),
             "ATH date":            ath_date.date(),
-            "Days t*→ATH":         days_ath,
+            "Days t_w→ATH":        days_ath,
             "S&P at ATH":          round(ath_close, 1),
-            "% return t*→ATH":     f"{pct_ret:+.1f}%",
+            "% return t_w→ATH":    f"{pct_ret:+.1f}%",
             "VaR-99 breaches":     n_breach,
         })
 
     df_out = pd.DataFrame(rows)
     _print_table(df_out)
 
-    days_arr = np.array([r["Days t*→ATH"] for r in rows])
-    pct_arr  = np.array([float(r["% return t*→ATH"].rstrip('%')) for r in rows])
+    days_arr = np.array([r["Days t_w→ATH"] for r in rows])
+    pct_arr  = np.array([float(r["% return t_w→ATH"].rstrip('%')) for r in rows])
     brc_arr  = np.array([r["VaR-99 breaches"] for r in rows])
 
     print(f"\n  Mean across 4 crises:")
-    print(f"    Days from t* to S&P 500 cycle high : {int(days_arr.mean()):>4d}")
-    print(f"    Cumulative S&P return on [t*, ATH] : {pct_arr.mean():+.1f}%")
-    print(f"    VaR-99 breaches on [t*, ATH]       : {brc_arr.mean():.1f}")
+    print(f"    Days from t_w to S&P 500 cycle high : {round(float(days_arr.mean())):>4d}")
+    print(f"    Cumulative S&P return on [t_w, ATH] : {pct_arr.mean():+.1f}%")
+    print(f"    VaR-99 breaches on [t_w, ATH]       : {brc_arr.mean():.1f}")
 
     print(f"\n  Reading:")
     print(f"  - In every crisis the S&P 500 reaches its all-time high INSIDE")
     print(f"    the geometric warning window — i.e. AFTER the warning fires.")
-    print(f"  - Cumulative price-side returns over [t*, ATH] average +{pct_arr.mean():.1f}%:")
+    print(f"  - Cumulative price-side returns over [t_w, ATH] average +{pct_arr.mean():.1f}%:")
     print(f"    while the geometry warns, the price side keeps appreciating.")
     print(f"  - VaR-99 breaches are sparse (mean {brc_arr.mean():.1f} per crisis;")
     print(f"    COVID-19 registers ZERO breaches over {days_arr[2]} days). The")
