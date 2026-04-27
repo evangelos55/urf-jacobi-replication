@@ -1,0 +1,27 @@
+{
+  "title": "URF-Jacobi Replication Archive — Jacobi instability on SPD(n) as a precursor of systemic financial transitions",
+  "description": "<p>Replication archive accompanying the manuscript <em>\"Jacobi instability on SPD(n) as a precursor of systemic financial transitions\"</em> by E. Papadopoulos, submitted to <em>Physics Letters A</em> (2026).</p><p>The archive contains four forensic JSON snapshots covering the dot-com (2000), 2008 GFC, COVID (2020) and 2025 trade-war crises; the frozen S&amp;P 500 daily close series (1998–2026); and a self-contained <code>verify.py</code> script that reproduces every numerical claim of the Letter (mean lead time 332 days; 95% bootstrap CI lower bound 290 days; Bonferroni-corrected Mann–Whitney p = 0.007 for R(t), p = 0.005 for TSS(t); Minsky-signature Test 6).</p><p>The implementation pipeline producing the geometric indicators is intentionally <strong>not</strong> included; the methodology is fully described in §2–3 of the Letter. This archive provides the machine-readable data and verification harness so that any reader can confirm the published claims from the data alone.</p><p>License: CC BY-NC-ND 4.0. Citation: see the accompanying CITATION.cff and README.md.</p>",
+  "creators": [
+    {
+      "name": "Papadopoulos, Evangelos",
+      "affiliation": "Independent Researcher, London, United Kingdom"
+    }
+  ],
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "CC-BY-NC-ND-4.0",
+  "keywords": [
+    "econophysics",
+    "systemic risk",
+    "Riemannian geometry",
+    "SPD manifold",
+    "affine-invariant metric",
+    "covariance",
+    "Jacobi instability",
+    "early-warning indicators",
+    "financial crises",
+    "Minsky moment",
+    "universality class"
+  ],
+  "language": "eng"
+}

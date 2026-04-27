@@ -6,11 +6,11 @@ authors:
     given-names: Evangelos
     affiliation: "Independent Researcher, London, United Kingdom"
     email: "contact@econosysmographe.eu"
-date-released: 2026-04-24
+date-released: 2026-04-27
 version: "1.0.0"
 type: software
 license: CC-BY-NC-ND-4.0
-repository-code: "https://github.com/[username]/urf-jacobi-replication"
+repository-code: "https://github.com/evangelos55/urf-jacobi-replication"
 preferred-citation:
   type: article
   title: "Jacobi instability on SPD(n) as a precursor of systemic financial transitions"
