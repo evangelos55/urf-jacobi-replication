@@ -2,7 +2,7 @@ import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Pow
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Deriv
-import UrfTheory
+import urfTheory
 
 /-!
 # URF-WIZARD: Two-Price Theory and Strike Certification
@@ -362,7 +362,7 @@ theorem suture_lyapunov_affine
         (1 / (V t / G) * ((-S * (V t - G)) / G))) =
         -S * log (V t / G) * (1 - G / V t) := by
     field_simp
-    ring
+    try ring
 
   -- Conclude by transitivity: energy_deriv' -> substitute h_aff -> h_final
   rw [h_energy_deriv', h_aff]
